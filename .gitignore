@@ -1,0 +1,15 @@
+*.iml
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+.DS_STORE
+web.xml
+
+.vertx/
+.idea/
+target/
+mods/
