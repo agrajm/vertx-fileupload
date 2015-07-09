@@ -6,13 +6,18 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -38,45 +43,29 @@ public class SimpleFormUploadServer extends AbstractVerticle {
       getContext.request().response().sendFile("index.html");
     });
 
+    router.post("/form").handler(BodyHandler.create().setMergeFormAttributes(true));
     router.post("/form")
       .handler(routingContext -> {
 
-        final HttpServerRequest request = routingContext.request();
+        Set<FileUpload> fileUploadSet = routingContext.fileUploads();
+        Iterator<FileUpload> fileUploadIterator = fileUploadSet.iterator();
+        while (fileUploadIterator.hasNext()){
+          FileUpload fileUpload = fileUploadIterator.next();
 
-        // Upload Handler
-        request.setExpectMultipart(true);
-        request.uploadHandler(upload -> {
-          upload.exceptionHandler(exception -> {
-            request.response().end("Upload failed");
-          });
-          upload.endHandler(success -> {
-            request.response().end("Upload successful, you should see the file in the server directory");
-          });
-          upload.streamToFileSystem(upload.filename());
-        });
+          // To get the uploaded file do
+          Buffer uploadedFile = vertx.fileSystem().readFileBlocking(fileUpload.uploadedFileName());
 
-        // End Handler
-        request.endHandler(handler -> {
-          for (Map.Entry<String, String> entry : request.formAttributes()) {
-            request.response().write("Got attr " + entry.getKey() + " : " + entry.getValue() + "\n");
+          // Uploaded File Name
+          try {
+            String fileName = URLDecoder.decode(fileUpload.fileName(), "UTF-8");
+          } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
           }
-          request.response().end();
-        });
 
-
-        // Handling Form Encoded Parameters
-        /*request.bodyHandler(handler -> {
-
-          Buffer buff = handler.getBuffer(0, handler.length());
-          JsonObject paramMap = new JsonObject();
-          String contentType = request.headers().get(CONTENT_TYPE);
-          if (APPLICATION_X_WWW_FORM_URLENCODED.equals(contentType)) {
-            paramMap = this.getQueryMap(buff.toString()); // takes the buffer string and returns map of post params
-          } else {
-            paramMap = routingContext.getBodyAsJson();
-          }
-          //TODO Send paramMap to EventBus for processing by Worker Verticles
-        }); */
+          // Use the Event Bus to dispatch the file now
+          // Since Event Bus does not support POJOs by default so we need to create a MessageCodec implementation
+          // and provide methods for encode and decode the bytes
+        }
 
 
       });
