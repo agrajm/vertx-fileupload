@@ -6,9 +6,8 @@ By default this module contains a simple Java verticle which handles file upload
 
 # Run
 To run the example, go to the directory containing the Java Verticle and run
-{code}
+```java
 vertx run SimpleFormUploadServer.java
-{code}
-
+```
 To be able to run this example you must have Java1.8 and Vertx3.0 installed and in your Path variable.
 
