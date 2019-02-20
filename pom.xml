@@ -20,7 +20,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--Dependency versions-->
-    <vertx.version>3.0.0</vertx.version>
+    <vertx.version>3.5.4</vertx.version>
     <vertx.testtools.version>2.0.3-final</vertx.testtools.version>
     <junit.version>4.11</junit.version>
     <java.version>1.8</java.version>
